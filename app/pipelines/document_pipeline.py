@@ -37,13 +37,28 @@ class DocumentPipeline:
     def __init__(self):
         self.cleaner = TextCleaner()
         self.classifier = DocumentClassifier()
-        self.ocr_service = OCRService()
+
+        # OCR is initialized lazily.
+        # This prevents PaddleOCR/PaddlePaddle from starting for
+        # normal text-based PDFs that do not need OCR.
+        self.ocr_service = None
+
         self.chunk_service = ChunkService()
         self.embedding_service = EmbeddingService()
         self.qdrant_service = QdrantService()
-        #to ensure the collection exists before storing data in it
-        self.qdrant_service.create_collection() 
 
+        # Ensure the Qdrant collection exists before storing data.
+        self.qdrant_service.create_collection()
+
+    def _get_ocr_service(self):
+        """
+        Initialize OCR only when it is actually required.
+        """
+        if self.ocr_service is None:
+            print("Initializing OCR service...")
+            self.ocr_service = OCRService()
+
+        return self.ocr_service
 
     async def process(self, file_path: Path):
 
@@ -66,14 +81,20 @@ class DocumentPipeline:
 
         print("PDF pipeline selected")
 
-        # Extract text directly from PDF
+        # ---------------------------------------------------------
+        # STEP 1: Extract text directly from PDF
+        # ---------------------------------------------------------
+
         document = extract_text_from_pdf(file_path)
 
-        # Clean each page individually
+        # ---------------------------------------------------------
+        # STEP 2: Clean extracted text
+        # ---------------------------------------------------------
+
         for page in document.page_data:
             page.text = self.cleaner.clean(page.text)
 
-        # Rebuild full document text from cleaned pages
+        # Rebuild full document text
         document.text = "\n".join(
             page.text
             for page in document.page_data
@@ -82,19 +103,36 @@ class DocumentPipeline:
         document.characters = len(document.text)
         document.is_empty = len(document.text.strip()) == 0
 
-        # Decide whether OCR is required
+        print(
+            f"Extracted characters: {document.characters}, "
+            f"empty={document.is_empty}"
+        )
+
+        # ---------------------------------------------------------
+        # STEP 3: Decide whether OCR is required
+        # ---------------------------------------------------------
+
         decision = self.classifier.classify(document)
 
-        # OCR Pipeline
+        print(f"Document classification: {decision}")
+
+        # ---------------------------------------------------------
+        # STEP 4: OCR only when required
+        # ---------------------------------------------------------
+
         if decision == "ocr":
 
-            document = self.ocr_service.extract_text(file_path)
+            print("OCR required. Starting OCR service...")
 
-            # Clean each page individually
+            ocr_service = self._get_ocr_service()
+
+            document = ocr_service.extract_text(file_path)
+
+            # Clean OCR output
             for page in document.page_data:
                 page.text = self.cleaner.clean(page.text)
 
-            # Rebuild full document text from cleaned pages
+            # Rebuild full document text
             document.text = "\n".join(
                 page.text
                 for page in document.page_data
@@ -103,12 +141,23 @@ class DocumentPipeline:
             document.characters = len(document.text)
             document.is_empty = len(document.text.strip()) == 0
 
-        # Split document into chunks
+            print(
+                f"OCR extracted characters: {document.characters}, "
+                f"empty={document.is_empty}"
+            )
+
+        # ---------------------------------------------------------
+        # STEP 5: Split document into chunks
+        # ---------------------------------------------------------
+
         chunks = self.chunk_service.split(
             pages=document.page_data,
             source=document.source,
         )
 
+        print(f"Generated {len(chunks)} chunks")
+
+        # Print a small preview for debugging
         for chunk in chunks[:5]:
             print(
                 f"chunk={chunk.id}, "
@@ -117,11 +166,25 @@ class DocumentPipeline:
                 f"text_preview={chunk.text[:50]!r}"
             )
 
-        # Generate embeddings
+        # ---------------------------------------------------------
+        # STEP 6: Generate embeddings
+        # ---------------------------------------------------------
+
         embeddings = self.embedding_service.encode(chunks)
 
-        # Store embeddings in Qdrant
+        print(f"Generated {len(embeddings)} embeddings")
+
+        # ---------------------------------------------------------
+        # STEP 7: Store embeddings in Qdrant
+        # ---------------------------------------------------------
+
         self.qdrant_service.store_embeddings(embeddings)
+
+        print("Embeddings stored successfully in Qdrant")
+
+        # ---------------------------------------------------------
+        # STEP 8: Return processing result
+        # ---------------------------------------------------------
 
         return {
             "pipeline": "pdf",
@@ -138,14 +201,23 @@ class DocumentPipeline:
 
         print("Image pipeline selected")
 
-        # OCR Extraction
-        document = self.ocr_service.extract_text(file_path)
+        # Images always require OCR.
+        ocr_service = self._get_ocr_service()
 
-        # Clean each page individually
+        # ---------------------------------------------------------
+        # STEP 1: OCR extraction
+        # ---------------------------------------------------------
+
+        document = ocr_service.extract_text(file_path)
+
+        # ---------------------------------------------------------
+        # STEP 2: Clean OCR output
+        # ---------------------------------------------------------
+
         for page in document.page_data:
             page.text = self.cleaner.clean(page.text)
 
-        # Rebuild full document text from cleaned pages
+        # Rebuild full document text
         document.text = "\n".join(
             page.text
             for page in document.page_data
@@ -154,22 +226,40 @@ class DocumentPipeline:
         document.characters = len(document.text)
         document.is_empty = len(document.text.strip()) == 0
 
-        # Split into chunks
+        # ---------------------------------------------------------
+        # STEP 3: Split into chunks
+        # ---------------------------------------------------------
+
         chunks = self.chunk_service.split(
             pages=document.page_data,
             source=document.source,
         )
 
-        
-        # Generate embeddings
+        print(f"Generated {len(chunks)} chunks")
+
+        # ---------------------------------------------------------
+        # STEP 4: Generate embeddings
+        # ---------------------------------------------------------
+
         embeddings = self.embedding_service.encode(chunks)
 
-        # Store embeddings in Qdrant
+        print(f"Generated {len(embeddings)} embeddings")
+
+        # ---------------------------------------------------------
+        # STEP 5: Store embeddings in Qdrant
+        # ---------------------------------------------------------
+
         self.qdrant_service.store_embeddings(embeddings)
+
+        print("Embeddings stored successfully in Qdrant")
+
+        # ---------------------------------------------------------
+        # STEP 6: Return processing result
+        # ---------------------------------------------------------
 
         return {
             "pipeline": "image",
-            "characters": len(document.text),
+            "characters": document.characters,
             "is_empty": document.is_empty,
             "preview": document.text[:500],
             "chunks": len(chunks),
