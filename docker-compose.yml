@@ -1,32 +1,62 @@
 services:
+  # ==========================================
+  # 1. Frontend: React + Vite (Served via Nginx)
+  # ==========================================
+  frontend:
+    build:
+      context: ./docx-frontend
+      dockerfile: Dockerfile
+    container_name: docx-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - docx-network
+
+  # ==========================================
+  # 2. API: FastAPI Document Intelligence Engine
+  # ==========================================
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docx-api
     ports:
       - "8000:8000"
-
     environment:
       QDRANT_URL: http://qdrant:6333
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODEL: ${GEMINI_MODEL}
-
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
     volumes:
       - ./data/uploads:/app/data/uploads
       - ./app:/app/app
-
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
     depends_on:
       - qdrant
+    restart: unless-stopped
+    networks:
+      - docx-network
 
+  # ==========================================
+  # 3. Vector DB: Qdrant
+  # ==========================================
   qdrant:
     image: qdrant/qdrant:latest
-
+    container_name: docx-qdrant
     ports:
       - "6333:6333"
       - "6334:6334"
-
     volumes:
       - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    networks:
+      - docx-network
+
+networks:
+  docx-network:
+    driver: bridge
 
 volumes:
   qdrant_data:

@@ -2,9 +2,23 @@
 
 A production-oriented AI Document Intelligence Engine built with **FastAPI**, **Computer Vision**, **Vector Databases**, and modern **AI/NLP techniques**.
 
-<p align="center"> <img src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white" alt="Python"> <img src="https://img.shields.io/badge/FastAPI-0.138.1-009688?logo=fastapi&logoColor=white" alt="FastAPI"> <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white" alt="Docker"> <img src="https://img.shields.io/badge/Qdrant-Vector_DB-DC244C?logo=qdrant&logoColor=white" alt="Qdrant"> <img src="https://img.shields.io/badge/PaddleOCR-OCR-00A5E0?logo=paddlepaddle&logoColor=white" alt="PaddleOCR"> <img src="https://img.shields.io/badge/PyMuPDF-PDF_Processing-000000?logo=adobeacrobatreader&logoColor=white" alt="PyMuPDF"> <img src="https://img.shields.io/badge/Sentence_Transformers-Embeddings-FF6F00" alt="Sentence Transformers"> <img src="https://img.shields.io/badge/HuggingFace-BGE-yellow?logo=huggingface&logoColor=black" alt="HuggingFace"> </p>
+<p align="center">
+  <a href="https://github.com/ashishmarothiya/DocX/actions/workflows/ci-cd.yml"><img src="https://github.com/ashishmarothiya/DocX/actions/workflows/ci-cd.yml/badge.svg" alt="CI/CD Pipeline"></a>
+  <a href="Dockerfile"><img src="https://img.shields.io/badge/Docker-Multi--Container-2496ED?logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="https://github.com/ashishmarothiya/DocX/pkgs/container/docx%2Fbackend"><img src="https://img.shields.io/badge/GitHub_Packages-GHCR-blue?logo=github" alt="GitHub Packages"></a>
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.138.1-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=react" alt="React">
+  <img src="https://img.shields.io/badge/Qdrant-Vector_DB-DC244C?logo=qdrant&logoColor=white" alt="Qdrant">
+  <img src="https://img.shields.io/badge/PaddleOCR-OCR-00A5E0?logo=paddlepaddle&logoColor=white" alt="PaddleOCR">
+</p>
 
-<p align="center"> <img src="https://img.shields.io/badge/Status-In_Development-orange" alt="Project Status"> <img src="https://img.shields.io/badge/Architecture-Modular-blue" alt="Architecture"> <img src="https://img.shields.io/badge/Focus-AI_Engineering-purple" alt="AI Engineering"> </p>
+<p align="center">
+  <img src="https://img.shields.io/badge/CI%2FCD-Automated-success?logo=githubactions&logoColor=white" alt="CI/CD Status">
+  <img src="https://img.shields.io/badge/Status-Production_Ready-green" alt="Project Status">
+  <img src="https://img.shields.io/badge/Architecture-Modular_Microservices-blue" alt="Architecture">
+  <img src="https://img.shields.io/badge/Focus-AI_Engineering_%26_MLOps-purple" alt="AI Engineering & MLOps">
+</p>
 
 The system is designed to ingest, process, understand, and retrieve information from PDF and image documents using OCR, document classification, semantic chunking, vector embeddings, and Qdrant.
 
@@ -70,49 +84,47 @@ Build a scalable AI backend capable of:
 
 ```text
 document-intelligence-engine/
-
-├── app/
 │
-├── api/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml                # Automated CI/CD Pipeline (Lint, Test, Docker Build & GHCR)
 │
-├── core/
+├── app/                             # FastAPI Backend Application
+│   ├── api/                         # API Routers (/health, /upload, /search, /ask)
+│   ├── core/                        # Core Application Settings & Config
+│   ├── models/                      # Domain & Data Models
+│   ├── pipelines/                   # Ingestion & Document Processing Pipelines
+│   ├── schemas/                     # Pydantic Request & Response Schemas
+│   ├── services/                    # Business Logic (OCR, Chunking, Embeddings, Qdrant, RAG)
+│   ├── utils/                       # Utility Helpers
+│   └── main.py                      # FastAPI App Entrypoint & CORS Config
 │
-├── pipelines/
-│   └── document_pipeline.py
+├── docx-frontend/                   # Modern React (Vite) User Interface
+│   ├── src/                         # React UI Components & Styles
+│   ├── Dockerfile                   # Multi-Stage Frontend Dockerfile (Vite + Nginx)
+│   ├── nginx.conf                   # Nginx Reverse Proxy & Routing
+│   ├── package.json                 # Frontend Dependencies
+│   └── vite.config.js               # Vite Configuration
 │
-├── schemas/
-│   ├── chunk.py
-│   ├── document.py
-│   ├── embedding.py
-│   └── pipeline.py
+├── tests/                           # Automated Test Suite (Pytest)
+│   ├── conftest.py                  # Test Fixtures & Mocks
+│   ├── test_health.py               # Health Check & Root Route Tests
+│   ├── test_api_upload.py           # Upload Validation Tests
+│   ├── test_services.py             # TextCleaner, Chunking, Classifier Tests
+│   ├── test_schemas.py              # Pydantic Schema Validation Tests
+│   └── test_ocr.py                  # OCR Extraction Tests
 │
-├── services/
-│   ├── chunking_service.py
-│   ├── document_classifier.py
-│   ├── embedding_service.py
-│   ├── file_service.py
-│   ├── ocr_service.py
-│   ├── pdf_service.py
-│   ├── qdrant_service.py
-│   └── text_cleaner.py
-│
-├── utils/
-│
-└── main.py
-
 ├── data/
-│   └── uploads/
-
-├── docs/
-
-├── tests/
-
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-├── .dockerignore
-├── README.md
-└── .env.example
+│   └── uploads/                     # Document Upload Directory
+│
+├── Dockerfile                       # Production Backend Dockerfile (Python 3.11)
+├── docker-compose.yml               # Multi-Container Compose (Frontend, API, Qdrant)
+├── .dockerignore                    # Optimized Docker Build Context
+├── pytest.ini                       # Pytest Configuration
+├── requirements.txt                 # Production Dependencies
+├── requirements-dev.txt             # Development & Testing Dependencies
+├── .env.example                     # Environment Variable Template
+└── README.md                        # Project Documentation
 ```
 
 ---
@@ -327,51 +339,85 @@ The service currently provides:
 
 ---
 
-# 🐳 Docker
+# 🐳 Docker & Containerization
 
-The application is containerized using Docker.
+The application is fully containerized across all layers for rapid, deterministic deployment.
 
-The Docker image is based on:
+### 1. Backend Docker Container (`Dockerfile`)
+* **Base Image**: `python:3.11-slim`
+* **System Libraries**: `libgl1`, `libglib2.0-0`, `libgomp1`, and `curl` for computer vision and OCR workloads
+* **Optimization**: Multi-layer dependency caching (`requirements.txt` installed prior to application code copying)
+* **Health Check**: Automated periodic health checks querying `http://localhost:8000/health`
+* **Execution**: Production ASGI server via `uvicorn`
 
-```text
-python:3.13-slim
-```
-
-The Docker configuration includes system dependencies required by the document processing and OCR stack.
-
-The project also uses a `.dockerignore` file to prevent unnecessary files such as the local virtual environment from being sent to the Docker build context.
+### 2. Frontend Docker Container (`docx-frontend/Dockerfile`)
+* **Architecture**: Production-optimized **multi-stage build**
+  * *Stage 1 (Builder)*: `node:20-alpine` builds optimized static distribution assets via Vite
+  * *Stage 2 (Server)*: Ultra-lightweight `nginx:alpine` serves static files and reverse-proxies `/api/` traffic to the backend
+* **Health Check**: Automated `wget` probe verifying HTTP 200
 
 ---
 
-# 🐳 Docker Compose
+# 🐳 Full-Stack Docker Compose
 
-The project uses Docker Compose to run the application and Qdrant together.
+Run the entire ecosystem (Frontend, API, and Vector Database) with a single command:
 
-Current architecture:
+```bash
+docker compose up --build
+```
+
+### Services & Port Mappings
+
+| Service | Port | Description |
+|---|---|---|
+| **`frontend`** | `3000` | DocX React Web Interface (Nginx) |
+| **`api`** | `8000` | FastAPI Document Intelligence Backend (`/docs` for Swagger) |
+| **`qdrant`** | `6333` / `6334` | Qdrant Vector Database REST & gRPC endpoints |
 
 ```text
-Docker Compose
+Full-Stack Architecture (docker-compose)
 │
-├── API
-│   └── FastAPI
-│
-└── Qdrant
-    └── Vector Database
+├── Frontend (React + Vite + Nginx)       ─── Port 3000
+│     │ (proxies /api/ requests)
+│     ▼
+├── API (FastAPI + OCR + RAG + Embeddings)─── Port 8000
+│     │ (communicates over docx-network)
+│     ▼
+└── Qdrant (Vector Database + Storage)    ─── Port 6333
+      └── Persistent Volume: qdrant_data
 ```
 
-The API communicates with Qdrant through the Docker network using:
+---
+
+# 🚀 CI/CD Pipeline (GitHub Actions)
+
+DocX includes an automated, production-grade **CI/CD Pipeline** defined in [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
+
+### Pipeline Workflow & Stages
 
 ```text
-QDRANT_URL=http://qdrant:6333
+GitHub Push / Pull Request
+         │
+         ├───▶ Job 1: Backend CI
+         │       • Python 3.11 Setup & Pip Cache
+         │       • Flake8 Syntax & Code Quality Checks
+         │       • Pytest Test Suite Execution (100% Pass)
+         │
+         ├───▶ Job 2: Frontend CI
+         │       • Node.js 20 Setup & NPM Cache
+         │       • Clean Dependency Installation
+         │       • Vite Production Bundle Compilation
+         │
+         └───▶ Job 3: Docker CD & GitHub Container Registry
+                 • Docker Compose Configuration Validation
+                 • Docker Buildx Multi-Container Build
+                 • Automatic Publish to GitHub Packages (GHCR) on `main`:
+                     - ghcr.io/ashishmarothiya/docx/backend:latest
+                     - ghcr.io/ashishmarothiya/docx/frontend:latest
 ```
 
-Qdrant data is persisted using a Docker volume:
-
-```text
-qdrant_data
-```
-
-This allows vector data to survive container recreation.
+### GitHub Packages & Container Visibility
+When code is pushed to `main`, GitHub Actions automatically builds and publishes the container images to **GitHub Container Registry (GHCR)**. The Docker containers are automatically shown and linked on GitHub under the **"Packages"** section on your repository homepage.
 
 ---
 

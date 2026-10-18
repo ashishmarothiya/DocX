@@ -1,8 +1,11 @@
 # Virtual Environment
 .venv/
+venv/
+ENV/
 
-# Git
+# Git & CI/CD
 .git/
+.github/
 
 # Python Cache
 __pycache__/
@@ -10,15 +13,21 @@ __pycache__/
 *.pyo
 .pytest_cache/
 
+# Frontend (handled by frontend container)
+docx-frontend/
+node_modules/
+dist/
+
 # Environment Variables
 .env
+.env.local
 
-# IDE
+# IDE & OS
 .vscode/
-
-# Operating System
+.idea/
 .DS_Store
 Thumbs.db
 
-# Uploaded Documents
-data/uploads/
+# Uploaded Documents and temporary cache
+data/uploads/*
+!data/uploads/.gitkeep
