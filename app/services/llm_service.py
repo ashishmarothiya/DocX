@@ -1,66 +1,5 @@
 import os
 
-from openai import OpenAI
-
-
-class LLMService:
-    """
-    Generates grounded answers using retrieved document context.
-    """
-
-    def __init__(self):
-        api_key = os.getenv("OPENAI_API_KEY")
-
-        if not api_key:
-            raise RuntimeError(
-                "OPENAI_API_KEY is not configured."
-            )
-
-        self.client = OpenAI(api_key=api_key)
-
-        self.model = os.getenv(
-            "OPENAI_MODEL",
-            "gpt-5.6-terra",
-        )
-
-    def generate_answer(
-        self,
-        query: str,
-        results: list[dict],
-    ) -> str:
-
-        if not results:
-            return (
-                "I couldn't find enough information in the "
-                "indexed documents to answer this question."
-            )
-
-        context_parts = []
-
-        for index, result in enumerate(results, start=1):
-
-            source = result.get("source") or "Unknown source"
-            page = result.get("page") or "Unknown page"
-            chunk = result.get("chunk_index")
-            score = result.get("score", 0)
-            text = result.get("text") or ""
-
-            context_parts.append(
-                f"""
-SOURCE {index}
-Source: {source}
-Page: {page}
-Chunk: {chunk}
-Retrieval score: {score:.4f}
-
-Content:
-{text}
-""".strip()
-            )
-
-        context = "\n\n---\n\n".join(context_parts)
-import os
-
 from google import genai
 
 
@@ -81,7 +20,7 @@ class LLMService:
 
         self.model = os.getenv(
             "GEMINI_MODEL",
-            "gemini-3.8-flash",
+            "gemini-2.5-flash",
         )
 
     def generate_answer(
