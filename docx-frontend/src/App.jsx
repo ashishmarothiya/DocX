@@ -82,9 +82,13 @@ function App() {
   }, [query]);
 
   const uploadFiles = useCallback(async (incoming) => {
-    const valid = [...incoming].filter(f =>
-      ["application/pdf", "image/jpeg", "image/png"].includes(f.type)
-    );
+    const valid = [...incoming].filter(f => {
+      const ext = (f.name || "").toLowerCase().split(".").pop();
+      return (
+        ["application/pdf", "application/x-pdf", "image/jpeg", "image/png"].includes(f.type) ||
+        ["pdf", "png", "jpg", "jpeg"].includes(ext)
+      );
+    });
 
     if (!valid.length) {
       setStatus({
@@ -118,6 +122,9 @@ function App() {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
+          if (res.status === 413) {
+            throw new Error("File is too large. Maximum supported upload size is 100MB.");
+          }
           throw new Error(
             data.detail ||
             data.message ||

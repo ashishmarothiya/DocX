@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi import UploadFile
 from fastapi import File
@@ -11,11 +12,17 @@ async def upload_file(file: UploadFile = File(...)):
 
     allowed_types = [
         "application/pdf",
+        "application/x-pdf",
         "image/jpeg",
-        "image/png"
+        "image/png",
     ]
 
-    if file.content_type not in allowed_types:
+    ext = Path(file.filename or "").suffix.lower()
+    allowed_exts = [".pdf", ".jpeg", ".jpg", ".png"]
+
+    is_valid = (file.content_type in allowed_types) or (ext in allowed_exts)
+
+    if not is_valid:
         raise HTTPException(
             status_code=415,
             detail="Unsupported file type. Only PDF, JPEG, and PNG files are allowed."
